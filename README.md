@@ -2,10 +2,13 @@
 
 Implementation and simulation study for TransformerJM and other neural network based models for multivariate longitudinal and survival data.
 
+See `file_description.txt` for a description of each code file.
 
 ## Example
 
-```
+
+
+```python
 # Pytorch
 import torch
 import torch.nn as nn
