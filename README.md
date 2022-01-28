@@ -42,7 +42,7 @@ pred_windows = [1,2,3]
 scenario = "none"
 ```
 
-
+To simulate the data, call the `simulate_JM_base` function and keep only the observations which occur up to the time of event. In general, the data should be in the "long" format where each row contains the observation for a subject at a specific time. Here we split the data, using 70% for training and setting aside the remaining 30% for testing.
 
 ```python
 data_all = simulate_JM_base(I=I, obstime=obstime, opt=scenario, seed=i_sim)
@@ -60,11 +60,12 @@ test_data = data[data["id"].isin(test_id)]
 minmax_scaler = MinMaxScaler(feature_range=(-1,1))
 train_data.loc[:,["Y1","Y2","Y3"]] = minmax_scaler.fit_transform(train_data.loc[:,["Y1","Y2","Y3"]])
 test_data.loc[:,["Y1","Y2","Y3"]] = minmax_scaler.transform(test_data.loc[:,["Y1","Y2","Y3"]])
-
-train_long, train_base, train_mask, e_train, t_train, train_obs_time = get_tensors(train_data.copy())
 ```
 
-
+Training in Pytorch takes place 
+-describe training
+-mention get_tensors
+An in depth tutorial can be found on the [Pytorch Website](https://pytorch.org/tutorials/beginner/introyt/trainingyt.html).
 
 ```python
 ## Train model
