@@ -6,7 +6,7 @@ See `file_description.txt` for a description of each code file.
 
 ## Example
 
-
+First, we import the necessary libraries.
 
 ```python
 # Pytorch
@@ -30,11 +30,11 @@ from sklearn.preprocessing import MinMaxScaler
 pd.options.mode.chained_assignment = None
 ```
 
-
+The global options are set first. For the simulation, we set the number of simulated subjects to be `I` and the times at which longitudinal observations are made to be `obstime`. Setting `scenario = "none"` equates to Scenario 1 described in the paper. During evaluation, predictions are made using the longitudinal observations up to each `landmark_time` for times `pred_windows` into the future.
 
 ```python
 # Global options
-n_sim = 2
+n_sim = 1
 I = 1000
 obstime = [0,1,2,3,4,5,6,7,8,9,10]
 landmark_times = [1,2,3,4,5]
