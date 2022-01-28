@@ -29,7 +29,7 @@ pd.options.mode.chained_assignment = None
 
 
 
-```
+```python
 # Global options
 n_sim = 2
 I = 1000
@@ -41,7 +41,7 @@ scenario = "none"
 
 
 
-```
+```python
 data_all = simulate_JM_base(I=I, obstime=obstime, opt=scenario, seed=i_sim)
 data = data_all[data_all.obstime <= data_all.time]
 
@@ -63,7 +63,7 @@ train_long, train_base, train_mask, e_train, t_train, train_obs_time = get_tenso
 
 
 
-```
+```python
 ## Train model
 torch.manual_seed(0)
 
@@ -77,7 +77,6 @@ scheduler = get_std_opt(optimizer, d_model=32, warmup_steps=200, factor=0.2)
 
 n_epoch = 25
 batch_size = 32
-
 
 loss_values = []
 loss_test = []
