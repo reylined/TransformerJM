@@ -130,10 +130,6 @@ for LT_index, LT in enumerate(landmark_times):
     # Only keep longitudinal observations <= landmark time
     tmp_data = tmp_data.loc[tmp_data["obstime"]<=LT,:]
 
-    true_prob_tmp = tmp_all.loc[tmp_all["predtime"].isin(pred_times), ["true"]].values.reshape(-1,len(pred_times))
-    true_prob_LT = tmp_all.loc[tmp_all["predtime"]==LT, ["true"]].values
-    true_prob_tmp = true_prob_tmp / true_prob_LT # true conditional survival
-
     tmp_long, tmp_base, tmp_mask, e_tmp, t_tmp, obs_time = get_tensors(tmp_data.copy())
 
     base_0 = tmp_base[:,0,:].unsqueeze(1)        
@@ -168,18 +164,7 @@ for LT_index, LT in enumerate(landmark_times):
     surv_pred = surv_pred.cumprod(axis=1)
 
     auc, iauc = AUC(surv_pred, e_tmp.numpy(), t_tmp.numpy(), np.array(pred_times))
-    AUC_array[i_sim, LT_index, :] = auc
-    iAUC_array[i_sim, LT_index] = iauc
-    auc, iauc = AUC(true_prob_tmp, np.array(e_tmp), np.array(t_tmp), np.array(pred_times))
-    true_AUC_array[i_sim, LT_index, :] = auc
-    true_iAUC_array[i_sim, LT_index] = iauc
 
     bs, ibs = Brier(surv_pred, e_tmp.numpy(), t_tmp.numpy(),
                       e_train.numpy(), t_train.numpy(), LT, np.array(pred_windows))
-    BS_array[i_sim, LT_index, :] = bs
-    iBS_array[i_sim, LT_index] = ibs
-    bs, ibs = Brier(true_prob_tmp, e_tmp.numpy(), t_tmp.numpy(),
-                      e_train.numpy(), t_train.numpy(), LT, np.array(pred_windows))
-    true_BS_array[i_sim, LT_index, :] = bs
-    true_iBS_array[i_sim, LT_index] = ibs
 ```
