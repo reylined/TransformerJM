@@ -8,7 +8,7 @@ Models/
 │  ├─ functions.py (Helper functions for MFPCA and DeepSurv)
 |
 ├─ Transformer/
-│  ├─ TransformerJM.py (TransformerJM Pytorch implementation. Main class.
+│  ├─ TransformerJM.py (TransformerJM Pytorch implementation. Main class.)
 │  ├─ functions.py (Helper functions for TransformerJM)
 │  ├─ loss.py (Longitudinal and survival loss functions)
 │  ├─ sublayers.py (Decoder_Layer class)
