@@ -1,18 +1,22 @@
 Models/
 ├─ MATCH/
 │  ├─ functions.py (Helper functions for MATCH-net)
+|
 ├─ MFPCA_DeepSurv/
 │  ├─ DeepSurv.py (DeepSurv Pytorch implementation)
 │  ├─ MFPCA.r (Wrapper for MFPCA R package. See main_MFPCA_Cox.py and main_MFPCA_DeepSurv.py for usage.
 │  ├─ functions.py (Helper functions for MFPCA and DeepSurv)
+|
 ├─ Transformer/
 │  ├─ TransformerJM.py (TransformerJM Pytorch implementation. Main class.
 │  ├─ functions.py (Helper functions for TransformerJM)
 │  ├─ loss.py (Longitudinal and survival loss functions)
 │  ├─ sublayers.py (Decoder_Layer class)
 │  ├─ util.py (Positional encoding)
+|
 ├─ AUC_BS.r (Functions to calculate AUC and Brier score)
 ├─ metrics.py (Calls AUC_BS.r from Python to obtain AUC and Brier score)
+
 Simulation/
 ├─ data_simulation.py (Simulate multivariate longitudinal and survival data)
 ├─ main_MATCH.py (Train and evaluate MATCH-net on simulated data)
