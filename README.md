@@ -6,7 +6,7 @@ See `file_description.txt` for a description of each code file.
 
 ## Annotated Example
 
-The following is a walkthrough of the TransformerJM method on a simulated dataset. We demonstrate how the model is trained and used for prediction. First, we import the necessary libraries.
+The following is a walkthrough of the TransformerJM method on a simulated dataset. We demonstrate how the model is trained and used for prediction. First, we import the necessary libraries. Of note, `TransformerJM.py` defines the transformer class, `functions.py` contains several support functions for running the transformer, and `loss.py` contains the two objective functions which TransformerJM is trained on.
 
 ```python
 # Pytorch
@@ -114,57 +114,56 @@ for epoch in range(n_epoch):
     loss_values.append(running_loss.tolist())
 plt.plot((loss_values-np.min(loss_values))/(np.max(loss_values)-np.min(loss_values)), 'b-')
 ```
-
+In the simulation study, we examined several landmark times which are set in the `landmark_times` variable. Here we focus on a single landmark time denoted with the variable `LT`. When making predictions, it is important to only evaluate subjects who have not had the event at LT and to use only longitudinal observations which have occured up to LT.
 
 ```python
-## Survival Prediction using Landmarking
-for LT_index, LT in enumerate(landmark_times):
+pred_times = [x+LT for x in pred_windows]
 
-    pred_times = [x+LT for x in pred_windows]
+# Only keep subjects with survival time > landmark time
+tmp_data = test_data.loc[test_data["time"]>LT,:]
 
-    # Only keep subjects with survival time > landmark time
-    tmp_data = test_data.loc[test_data["time"]>LT,:]
-    tmp_id = np.unique(tmp_data["id"].values)
-    tmp_all = data_all.loc[data_all["id"].isin(tmp_id),:]
+# Only keep longitudinal observations <= landmark time
+tmp_data = tmp_data.loc[tmp_data["obstime"]<=LT,:]
+```
+For a set of longitudinal observations up to landmark time `LT`, we are interested in making predictions at several times which occur after `LT`. For example, if `LT=5`, we may be interested in making predictions at times `[6,7,8]`. The longitudinal and survival predictions are made for the first prediction time (i.e., 6). The longitudinal predictions are then concatenated to the longitudinal observations up to `LT` and then passed to the model again to obtain predictions at the next time (i.e., 7). This continues until all prediction times have been looped through. Lastly, we can call the `AUC` and `Brier` functions to evaluate how good the predictions are.
 
-    # Only keep longitudinal observations <= landmark time
-    tmp_data = tmp_data.loc[tmp_data["obstime"]<=LT,:]
+```python
+tmp_long, tmp_base, tmp_mask, e_tmp, t_tmp, obs_time = get_tensors(tmp_data.copy())
 
-    tmp_long, tmp_base, tmp_mask, e_tmp, t_tmp, obs_time = get_tensors(tmp_data.copy())
+base_0 = tmp_base[:,0,:].unsqueeze(1)        
+long_0 = tmp_long
+mask_T = torch.ones((long_0.shape[0],1), dtype=torch.bool)
 
-    base_0 = tmp_base[:,0,:].unsqueeze(1)        
-    long_0 = tmp_long
-    mask_T = torch.ones((long_0.shape[0],1), dtype=torch.bool)
+dec_long = long_0
+dec_base = base_0
 
-    dec_long = long_0
-    dec_base = base_0
+long_pred = torch.zeros(long_0.shape[0],0,long_0.shape[2])
+surv_pred = torch.zeros(long_0.shape[0],0,1)
 
-    long_pred = torch.zeros(long_0.shape[0],0,long_0.shape[2])
-    surv_pred = torch.zeros(long_0.shape[0],0,1)
+model = model.eval()
 
-    model = model.eval()
+for pt in pred_times:
+    dec_base = base_0.expand([-1,dec_long.shape[1],-1])
 
-    for pt in pred_times:
-        dec_base = base_0.expand([-1,dec_long.shape[1],-1])
+    out = model.decoder(dec_long, dec_base, get_mask(tmp_mask), obs_time)
+    out = model.decoder_pred(out[:,-1,:].unsqueeze(1), out,
+          tmp_mask.unsqueeze(1), torch.tensor(pt))
+    long_out = model.long(out)
+    surv_out = torch.sigmoid(model.surv(out))
 
-        out = model.decoder(dec_long, dec_base, get_mask(tmp_mask), obs_time)
-        out = model.decoder_pred(out[:,-1,:].unsqueeze(1), out, tmp_mask.unsqueeze(1), torch.tensor(pt))
-        long_out = model.long(out)
-        surv_out = torch.sigmoid(model.surv(out))
+    long_pred = torch.cat((long_pred, long_out), dim=1)
+    surv_pred = torch.cat((surv_pred, surv_out), dim=1)
 
-        long_pred = torch.cat((long_pred, long_out), dim=1)
-        surv_pred = torch.cat((surv_pred, surv_out), dim=1)
+    dec_long = torch.cat((dec_long, long_out), dim=1)
+    tmp_mask = torch.cat((tmp_mask, mask_T), dim=1)
+    obs_time = torch.cat((obs_time, torch.tensor(pt).expand([obs_time.shape[0],1])),dim=1)
 
-        dec_long = torch.cat((dec_long, long_out), dim=1)
-        tmp_mask = torch.cat((tmp_mask, mask_T), dim=1)
-        obs_time = torch.cat((obs_time, torch.tensor(pt).expand([obs_time.shape[0],1])),dim=1)
+long_pred = long_pred.detach().numpy()
+surv_pred = surv_pred.squeeze().detach().numpy()
+surv_pred = surv_pred.cumprod(axis=1)
 
-    long_pred = long_pred.detach().numpy()
-    surv_pred = surv_pred.squeeze().detach().numpy()
-    surv_pred = surv_pred.cumprod(axis=1)
+auc, iauc = AUC(surv_pred, e_tmp.numpy(), t_tmp.numpy(), np.array(pred_times))
 
-    auc, iauc = AUC(surv_pred, e_tmp.numpy(), t_tmp.numpy(), np.array(pred_times))
-
-    bs, ibs = Brier(surv_pred, e_tmp.numpy(), t_tmp.numpy(),
-                      e_train.numpy(), t_train.numpy(), LT, np.array(pred_windows))
+bs, ibs = Brier(surv_pred, e_tmp.numpy(), t_tmp.numpy(),
+                  e_train.numpy(), t_train.numpy(), LT, np.array(pred_windows))
 ```
