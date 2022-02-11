@@ -125,7 +125,7 @@ tmp_data = test_data.loc[test_data["time"]>LT,:]
 # Only keep longitudinal observations <= landmark time
 tmp_data = tmp_data.loc[tmp_data["obstime"]<=LT,:]
 ```
-For a set of longitudinal observations up to landmark time `LT`, we are interested in making predictions at several times which occur after `LT`. For example, if `LT=5`, we may be interested in making predictions at times `[6,7,8]`. The longitudinal and survival predictions are made for the first prediction time (i.e., 6). The longitudinal predictions are then concatenated to the longitudinal observations up to `LT` and then passed to the model again to obtain predictions at the next time (i.e., 7). This continues until all prediction times have been looped through. Lastly, we can call the `AUC` and `Brier` functions to evaluate how good the predictions are.
+For a set of longitudinal observations up to landmark time LT, we are interested in making predictions at several times which occur after `LT`. For example, if `LT=5`, we may be interested in making predictions at times `[6,7,8]`. The longitudinal and survival predictions are made for the first prediction time (i.e., 6). The longitudinal predictions are then concatenated to the longitudinal observations up to LT and then passed to the model again to obtain predictions at the next time (i.e., 7). This continues until all prediction times have been looped through. Lastly, we can call the `AUC` and `Brier` functions to evaluate how good the predictions are.
 
 ```python
 tmp_long, tmp_base, tmp_mask, e_tmp, t_tmp, obs_time = get_tensors(tmp_data.copy())
