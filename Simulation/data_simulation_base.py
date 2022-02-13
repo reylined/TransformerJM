@@ -32,7 +32,7 @@ def simulate_JM_base(I, obstime, miss_rate=0.1, opt="none", seed=None):
     eta_long = mean_long + ranef
 
 
-    if opt=="none":
+    if opt=="none" or opt=="nonph":
         gamma = np.array([-4,-2])
         alpha = np.array([0.2,-0.2,0.4])
         x1 = np.random.binomial(n=1,p=0.5,size=I)
@@ -60,7 +60,10 @@ def simulate_JM_base(I, obstime, miss_rate=0.1, opt="none", seed=None):
     
     def CHF(tau):
         def h(t):
-            return scale * np.exp(eta_surv[i] + alpha_beta*t)
+            if opt=="none" or opt=="interaction":
+                return scale * np.exp(eta_surv[i] + alpha_beta*t)
+            if opt=="nonph":
+                return scale * np.exp(eta_surv[i] + 3*x2[i]*np.sin(t) + alpha_beta*t)
         return np.exp(-1 * integrate.quad(lambda xi: h(xi),0,tau)[0])
         
     Ti = np.empty(I)
